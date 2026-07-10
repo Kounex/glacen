@@ -26,4 +26,13 @@ struct KeychainStoreTests {
         let fetched = try store.data(forKey: "token")
         #expect(fetched == nil)
     }
+
+    @Test func setOverwritesExistingValue() throws {
+        let store = KeychainStore(service: "com.kounex.glacen.tests.\(UUID().uuidString)")
+        try store.set(Data("first".utf8), forKey: "token")
+        try store.set(Data("second".utf8), forKey: "token")
+        let fetched = try store.data(forKey: "token")
+        #expect(fetched == Data("second".utf8))
+        try store.removeValue(forKey: "token")
+    }
 }
