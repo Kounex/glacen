@@ -4,7 +4,7 @@ protocol RedditClient: Sendable {
     func fetchHomeFeed(after: String?) async throws -> RedditPage
 }
 
-enum RedditClientError: Error {
+enum RedditClientError: Error, Equatable {
     case requestFailed
 }
 
