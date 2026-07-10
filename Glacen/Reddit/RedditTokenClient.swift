@@ -12,7 +12,7 @@ struct RedditTokenResponse: Decodable, Equatable, Sendable {
     }
 }
 
-enum RedditTokenClientError: Error {
+enum RedditTokenClientError: Error, Equatable {
     case invalidResponse
     case server(status: Int, body: String)
 }
