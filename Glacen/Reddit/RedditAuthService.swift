@@ -12,17 +12,26 @@ final class RedditAuthService: NSObject {
     private let config: RedditOAuthConfig
     private let tokenClient: RedditTokenClient
     private let keychain: KeychainStore
+    private var currentWebAuthSession: ASWebAuthenticationSession?
+    private var isSigningIn = false
+
+    private static let accessTokenKey = "access_token"
+    private static let refreshTokenKey = "refresh_token"
 
     init(config: RedditOAuthConfig = .live, keychain: KeychainStore = KeychainStore(service: "com.kounex.glacen.reddit")) {
         self.config = config
         self.tokenClient = RedditTokenClient(config: config, session: .shared, userAgent: RedditUserAgent.current)
         self.keychain = keychain
-        let storedToken: Data? = (try? keychain.data(forKey: "access_token")) ?? nil
+        let storedToken = try? keychain.data(forKey: Self.accessTokenKey)
         self.isAuthenticated = storedToken != nil
         super.init()
     }
 
     func signIn() async throws {
+        guard !isSigningIn else { return }
+        isSigningIn = true
+        defer { isSigningIn = false }
+
         let verifier = PKCE.generateCodeVerifier()
         let challenge = PKCE.codeChallenge(for: verifier)
         let state = UUID().uuidString
@@ -36,14 +45,16 @@ final class RedditAuthService: NSObject {
     }
 
     func signOut() throws {
-        try keychain.removeValue(forKey: "refresh_token")
-        try keychain.removeValue(forKey: "access_token")
+        let refreshTokenError = Result { try keychain.removeValue(forKey: Self.refreshTokenKey) }
+        let accessTokenError = Result { try keychain.removeValue(forKey: Self.accessTokenKey) }
         isAuthenticated = false
         username = nil
+        try refreshTokenError.get()
+        try accessTokenError.get()
     }
 
     func currentAccessToken() async throws -> String {
-        guard let data = try keychain.data(forKey: "access_token"),
+        guard let data = try keychain.data(forKey: Self.accessTokenKey),
               let token = String(data: data, encoding: .utf8) else {
             throw RedditAuthError.invalidCallback
         }
@@ -51,15 +62,16 @@ final class RedditAuthService: NSObject {
     }
 
     private func persist(_ token: RedditTokenResponse) throws {
-        try keychain.set(Data(token.accessToken.utf8), forKey: "access_token")
+        try keychain.set(Data(token.accessToken.utf8), forKey: Self.accessTokenKey)
         if let refreshToken = token.refreshToken {
-            try keychain.set(Data(refreshToken.utf8), forKey: "refresh_token")
+            try keychain.set(Data(refreshToken.utf8), forKey: Self.refreshTokenKey)
         }
     }
 
     private func presentWebAuthSession(url: URL) async throws -> URL {
         try await withCheckedThrowingContinuation { continuation in
-            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "glacen") { callbackURL, error in
+            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "glacen") { [weak self] callbackURL, error in
+                self?.currentWebAuthSession = nil
                 if let callbackURL {
                     continuation.resume(returning: callbackURL)
                 } else {
@@ -68,6 +80,7 @@ final class RedditAuthService: NSObject {
             }
             session.presentationContextProvider = self
             session.prefersEphemeralWebBrowserSession = true
+            currentWebAuthSession = session
             session.start()
         }
     }
