@@ -2,6 +2,21 @@
 
 Glacen is an unofficial, calm-first Reddit client for iOS whose core purpose is filtering negativity, bait, and low-effort "slop" out of a user's feed using an LLM the user controls, with a manual review loop that improves accuracy over time.
 
+## Current status (as of 2026-07-10) — BLOCKED on Reddit API access
+
+Milestone 1 (foundation, OAuth, read-only home feed — see `docs/superpowers/plans/2026-07-10-foundation-oauth-home-feed.md`) is **code-complete**: all 13 implementation tasks done, spec-reviewed and code-reviewed with fixes applied and re-verified, 31 tests passing, through commit `c94276e`. Source pushed to `https://github.com/Kounex/glacen` (public).
+
+**What's blocking further progress:** Task 14 (manual end-to-end OAuth verification) needs a real Reddit API client ID, but Reddit closed self-service OAuth app creation in November 2025 (the "Responsible Builder Policy") — new API access now requires submitting a request form and waiting for manual approval, which can take days to weeks or be rejected. An application was submitted on 2026-07-10 via Reddit's developer request form (category: "developer... app that does not work in the Devvit ecosystem"), citing `https://github.com/Kounex/glacen` as the source link. **This blocks the entire project, not just Task 14** — without Reddit API access, the app has no data source at all, so nothing downstream is worth building until access is granted.
+
+**When resuming:** check whether Reddit has responded (approved, rejected, or asked follow-up questions) before doing anything else. If approved: export the real `REDDIT_CLIENT_ID`, complete Task 14's manual checklist in the plan doc (the plan also calls out an extra check worth adding — force-quit/relaunch with a valid stored token should skip login, and backgrounding/rotating during an active feed load should NOT reset the feed, per a reviewer's flagged-but-unverified SwiftUI state-identity claim). If rejected: the appeal/reapplication approach needs to be decided with the user before writing more code.
+
+**Roadmap after Task 14 unblocks** (each gets its own plan written when work starts on it, not before):
+- M2: Post detail/comments view, vote, save
+- M3: SwiftData models + `ClassificationProvider` protocol + cloud/on-device providers + `ExampleStore`
+- M4: Wire classification into Home, strictness setting, Review/Hidden tier UI, Filtered tab
+- M5: Review loop corrections, Settings screens (backend picker, instructions editor, dataset browser)
+- M6: CloudKit sync, error-handling banners, onboarding polish
+
 **Full design spec:** [`docs/superpowers/specs/2026-07-10-glacen-design.md`](docs/superpowers/specs/2026-07-10-glacen-design.md) — read this before making architectural or product decisions. It is the source of truth for scope, data flow, data model, design system, and what is explicitly out of scope for v1. This file is a working summary; the spec is authoritative where they diverge.
 
 ## What v1 is
