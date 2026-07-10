@@ -4,6 +4,7 @@
 xcuserdata/
 DerivedData/
 .build/
+Glacen/Info.plist
 
 # Swift Package Manager
 .swiftpm/
