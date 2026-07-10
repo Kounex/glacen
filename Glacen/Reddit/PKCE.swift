@@ -6,7 +6,8 @@ import Security
 enum PKCE {
     static func generateCodeVerifier() -> String {
         var bytes = [UInt8](repeating: 0, count: 32)
-        _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        precondition(status == errSecSuccess, "SecRandomCopyBytes failed unexpectedly")
         return base64URLEncode(Data(bytes))
     }
 

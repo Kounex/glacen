@@ -11,6 +11,15 @@ struct PKCETests {
         #expect(!verifier.contains("="))
     }
 
+    @Test func codeVerifierLengthMeetsRFC7636Minimum() {
+        let verifier = PKCE.generateCodeVerifier()
+        #expect((43...128).contains(verifier.count))
+    }
+
+    @Test func codeVerifierIsUniqueAcrossCalls() {
+        #expect(PKCE.generateCodeVerifier() != PKCE.generateCodeVerifier())
+    }
+
     @Test func codeChallengeIsDeterministicForSameVerifier() {
         let verifier = "test-verifier-value"
         #expect(PKCE.codeChallenge(for: verifier) == PKCE.codeChallenge(for: verifier))
