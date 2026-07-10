@@ -37,4 +37,18 @@ struct RedditAuthorizationURLBuilderTests {
             try RedditAuthorizationURLBuilder.extractCode(from: callback, expectedState: "xyz")
         }
     }
+
+    @Test func errorTakesPriorityOverStateMismatch() {
+        let callback = URL(string: "glacen://oauth-callback?state=wrong&error=access_denied")!
+        #expect(throws: RedditAuthError.authorizationDenied("access_denied")) {
+            try RedditAuthorizationURLBuilder.extractCode(from: callback, expectedState: "xyz")
+        }
+    }
+
+    @Test func throwsInvalidCallbackWhenCodeMissing() {
+        let callback = URL(string: "glacen://oauth-callback?state=xyz")!
+        #expect(throws: RedditAuthError.invalidCallback) {
+            try RedditAuthorizationURLBuilder.extractCode(from: callback, expectedState: "xyz")
+        }
+    }
 }
