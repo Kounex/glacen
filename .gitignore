@@ -1,0 +1,15 @@
+# Xcode / XcodeGen
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+DerivedData/
+.build/
+
+# Swift Package Manager
+.swiftpm/
+
+# macOS
+.DS_Store
+
+# Superpowers brainstorming companion (ephemeral working files)
+.superpowers/
