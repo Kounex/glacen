@@ -43,6 +43,7 @@ targets:
         Release:
           SWIFT_ACTIVE_COMPILATION_CONDITIONS: ""
     info:
+      # XcodeGen 2.45.4 requires an explicit info.path when info.properties is set
       path: Glacen/Info.plist
       properties:
         CFBundleURLTypes:
