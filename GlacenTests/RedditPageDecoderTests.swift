@@ -21,7 +21,7 @@ struct RedditPageDecoderTests {
                   "author": "someuser",
                   "score": 1234,
                   "num_comments": 56,
-                  "selftext": "",
+                  "selftext": "Body text of the post",
                   "permalink": "/r/technology/comments/abc123/post_title/",
                   "created_utc": 1700000000.0
                 }
@@ -39,6 +39,10 @@ struct RedditPageDecoderTests {
         #expect(page.posts[0].score == 1234)
         #expect(page.posts[0].commentCount == 56)
         #expect(page.after == "t3_def456")
+        #expect(page.posts[0].author == "someuser")
+        #expect(page.posts[0].selftext == "Body text of the post")
+        #expect(page.posts[0].permalink == "/r/technology/comments/abc123/post_title/")
+        #expect(page.posts[0].createdAt == Date(timeIntervalSince1970: 1700000000.0))
     }
 
     @Test func ignoresNonPostChildren() throws {
